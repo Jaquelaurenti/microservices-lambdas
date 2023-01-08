@@ -2,10 +2,10 @@ const AWS = require('aws-sdk');
 exports.handler = (event, context, callback) => {
 
   if (!event || !event.id || !event.message) {
-    return {
+    return callback(null,{
       statusCode: 400,
       body: JSON.stringify({ error: 'Missing required fields: id and message' }),
-    };
+    });
   }
   // cria um objeto do tipo DocumentClient, que é um cliente especializado
   // para trabalhar com o DynamoDB
@@ -24,16 +24,16 @@ exports.handler = (event, context, callback) => {
   try {
     const result = docClient.put(params).promise();
     if (!result) {
-      return {
+      return callback(null,{
         statusCode: 500,
         body: JSON.stringify({ error: 'Error saving data to DynamoDB' }),
-      };
+      });
     }
   } catch (error) {
-    return {
+    return callback(null,{
       statusCode: 500,
       body: JSON.stringify({ error: 'Error saving data to DynamoDB' }),
-    };
+    });
   }
 
   // Cria uma conexão com o SNS
@@ -77,10 +77,10 @@ exports.handler = (event, context, callback) => {
       });
     }
     catch(error) {
-      return {
+      return callback(null,{
         statusCode: 500,
         body: JSON.stringify({ error: 'Error a publish Topic SNS' }),
-      };
+      });
     }
 
     // Assina o tópico
@@ -113,17 +113,17 @@ exports.handler = (event, context, callback) => {
       });
     }
     catch(error) {
-      return {
+      return callback(null,{
         statusCode: 500,
         body: JSON.stringify({ error: 'Error a subscribe Topic SNS' }),
-      };
+      });
     }
 
   }
   catch (error) {
-    return {
+    return callback(null,{
       statusCode: 500,
       body: JSON.stringify({ error: 'Error create Topic SNS' }),
-    };
+    });
   }
 } // end handle
