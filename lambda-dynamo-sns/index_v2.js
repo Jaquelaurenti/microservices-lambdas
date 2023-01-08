@@ -1,10 +1,10 @@
 const AWS = require('aws-sdk');
 exports.handler = (event, context, callback) => {
 
-  if (!event || !event.id || !event.message) {
+  if (!event || !event.id || !event.message || !event.topic) {
     return callback(null, {
       statusCode: 400,
-      body: JSON.stringify({ error: 'Missing required fields: id and message' }),
+      body: JSON.stringify({ error: 'Missing required fields: id, message and topic' }),
     });
   }
   // cria um objeto do tipo DocumentClient, que é um cliente especializado
@@ -17,6 +17,7 @@ exports.handler = (event, context, callback) => {
     Item: {
       id: event.id, // ID do item a ser salvo
       message: event.message, // mensagem a ser salva
+      topic: event.topic // topico a ser criado
     },
   };
 
@@ -39,7 +40,7 @@ exports.handler = (event, context, callback) => {
   // Cria uma conexão com o SNS
   const sns = new AWS.SNS();
   // determina o nome do tópico
-  const topicName = "topico-dynamo-sns-create";
+  const topicName = event.topic
 
   // Define os parâmetros para a operação de criação de tópico
   const paramsTopic = {
@@ -55,6 +56,7 @@ exports.handler = (event, context, callback) => {
       }
       // Obtém o Amazon Resource Name (ARN) do tópico
       const topicArn = data.TopicArn;
+
       // Publica mensagem
       // Envia uma mensagem para o tópico SNS informando que o registro foi criado no DynamoDB
       const paramsMessage = {
@@ -83,10 +85,10 @@ exports.handler = (event, context, callback) => {
 
       // Assina o tópico
       // Defina o ID do tópico e a URL de retorno
-      var endpoint = 'arn:aws:lambda:us-east-1:567374489415:function:lambda-sns-signature';
+      const endpoint = 'arn:aws:lambda:us-east-1:567374489415:function:lambda-sns-signature';
 
       // Crie a assinatura
-      var paramsSubscribe = {
+      const paramsSubscribe = {
         Protocol: 'LAMBDA',
         TopicArn: topicArn,
         Endpoint: endpoint
@@ -116,8 +118,8 @@ exports.handler = (event, context, callback) => {
           body: JSON.stringify({ error: 'Error a subscribe Topic SNS' }),
         });
       }
-    });
 
+    });
 
 
   }
